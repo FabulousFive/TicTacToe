@@ -48,7 +48,7 @@ All win condition checks:
 - **Person 2**: Begin with basic input handling
 - **Person 3**: Create structure for move execution
 - **Person 4**: Set up framework for win condition checking
-- **Person 5**: Set up basic game loop and UI messages
+- **Lindsay**: Set up basic game loop and UI messages
 
 ### Development Process
 1. Individual component development
