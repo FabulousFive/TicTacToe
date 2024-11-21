@@ -29,7 +29,7 @@ All win condition checks:
 - Diagonal checks (`winDiag0`, `winDiag1`)
 - Testing win conditions
 
-### 5. Main Game Flow & UI (Person 5)
+### 5. Main Game Flow & UI (Lindsay)
 - Main game loop
 - User interface messages/prompts
 - Game state management
