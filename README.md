@@ -1,5 +1,3 @@
-Here's a cleaner, more organized version using markdown:
-
 # Tic-Tac-Toe MIPS Project Structure
 
 ## Team Responsibilities
