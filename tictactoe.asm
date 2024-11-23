@@ -1,6 +1,7 @@
 # Tic Tac Toe
 # Lindsay Kislingbury, Catherine Lopez-Ruiz, Kenia Velasco, Hadya Rohin, Hope Gomez
 
+
 .macro  end
 	li $v0, 10
 	syscall
@@ -9,20 +10,43 @@
 
 .data
 # Messages
-welcomeMessage:	.asciiz "\nTic Tac Toe!\n"
-turnMessage_X:	.asciiz "Player X's turn!\n"
+welcomeMessage:	.asciiz "\n	 Tic Tac Toe!\n"
+mainMenu: .asciiz "\n----------MAIN MENU----------\n1. Rules of the Game\n2. How to play in MIPS\n3. Play Game!\n"
+selectOne: .asciiz "\nPlase select one of the options: "
+gameRulesTitle:"\n----------Tic Tac Toe Rules-----------"
+gameRules: .asciiz "\n(1)Tic Tac Toe is a two player game.\n(2)One person is the X's and the other person is the O's.\n(3)Each player takes a turn placing an 'X' or an 'O' on the board.\n(4)You win by getting three X's or three O's in a row.\n(5)A row can be diagonal, horizontal, or verticle.\n(6)If no one has three in a row, and there are no spaces on the board left, then no one wins.\n"
+howToTitle: .asciiz "\n----------How to Play Tic Tac Toe in MIPS----------"
+howTo: .asciiz "\n(1)Use a, s, d, f, to move from one box to the other.\n	(a)Move One LEFT	\n	(s)Move One UP\n	(d)Move One DOWN\n	(f)Move One RIGHT\n(2)Keep using a, s, d, f to move until you are at your desired location.\n(3)Once you are at your desired location, type X or O depending on if you are X's or O's.\n(4)Once you input you X or O, your turn is over, and it is the next players turn.\n(5)Keep repeating until the game is over.\n"
+ready: .asciiz "\nAre you ready to play Tic Tac Toe?!\nType 'y' for yes or 'n' for no: "
+startGame: .asciiz "\nLet's play Tic Tac Toe!"
+promptXorO: .asciiz "\nPlayer 1, Please select X or O: "
+player1isX: .asciiz "\nPlayer 1, you are X's! \nPlayer 2, you are O's!\n\n"
+player1isO: .asciiz "\nPlayer 1, you are O's! \nPlayer 2, you are X's!\n\n"
+choiceX: .byte 'X'
+choicex: .byte 'x'
+choiceO: .byte 'O'
+choiceo: .byte 'o'
+choiceYes: .byte 'y'
+choiceNo: .byte 'n'
+turnMessage_X:	.asciiz "\nPlayer X's turn!\n"
 turnMessage_O:	.asciiz "Player O's turn!\n"
 inputPrompt:	.asciiz "Enter position (1-9): "
 invalidMessage:	.asciiz "Invalid move! Try again.\n"
 winMessage:		.asciiz "\nWINNER: "
 tieMessage:		.asciiz "Game Tie!\n"
 playAgainPrompt:	.asciiz "Play Again? (1=Yes, 0=No): "
+nL: .asciiz "   \n   "
 
 # Board Data 
 board:		.word boardRow0, boardRow1, boardRow2
-boardRow0:		.word 1, 2, 3
+boardRow0:	.word 1, 2, 3
 boardRow1: 	.word 4, 5, 6
 boardRow2: 	.word 7, 8, 9
+
+# Draw Board
+rowDivider: .asciiz "\n-----\n"
+columnDivider: .byte '|'
+
 
 # Constants
 .eqv MARK_X 1 # like an enum. makes the code more readable. not necessary if we dont want to use them
@@ -39,8 +63,143 @@ main:
 	la $a0, welcomeMessage
 	syscall
 	
+	#Print Menu Menu and Options
+	li $v0, 4
+	la $a0, mainMenu
+	syscall
+	
+	#Print Prompt for user to select an option
+	li $v0, 4
+	la $a0, selectOne
+	syscall
+	
+	#Get user input
+	li $v0, 5
+	syscall
+	move $t0, $v0
+	
+IsUserInput1:
+	#if user input is 1
+	beq $t0,1, equals1
+	
+	j IsUserInput2
+	
+equals1:#show rules 
+
+#Show Rules Title
+	li $v0, 4
+	la $a0, gameRulesTitle
+	syscall
+
+#Show rules of Tic-tac-toe
+	li $v0, 4
+	la $a0, gameRules
+	syscall
+	
+	#print out "Are you ready prompt"
+	li $v0, 4
+	la $a0, ready
+	syscall
+	
+	#Get Player's responce, Yes or No
+	li $v0, 8
+	syscall
+	move $t0, $v0
+	
+	jal initialize
+	
+IsUserInput2:
+	#If user input is 2
+	beq $t0,2,equals2
+	
+	j IsUserInput3
+	
+equals2: #Show how to play in MIPS
+
+#Print howTo Title
+	li $v0, 4
+	la $a0, howToTitle
+	syscall
+
+#Print howTo description
+	li $v0, 4
+	la $a0, howTo
+	syscall
+	
+	li $v0, 4
+	la $a0, ready
+	syscall
+	
+	#Get Player's responce, Yes or No
+	li $v0, 8
+	syscall
+	move $t0, $v0
+	
+	beq $t0, 'y', yes
+	
+	#else no
+	
+	
+	yes:
+		jal initialize
+
+
+
+
+IsUserInput3:
+	#If User input is 3
+	beq $t0, 3, equals3
+equals3:
 	# Initalize game
-	jal initalizeGame
+	li $v0, 4
+	la $a0, startGame
+	syscall
+	
+	#Prompt for Player 1 to pick X or O 
+	li $v0, 4
+	la $a0, promptXorO
+	syscall
+	
+	#Get Player's pick of X or O
+	li $v0, 8
+	syscall
+	move $t0, $v0
+	
+	
+	#If Player Picks Capitol X or Lower Case X
+	beq $t0, 'X', equalsX
+		jal conditionIfx
+conditionIfx:	
+	beq $t0, 'x', equalsX
+		jal conditionIfO
+	
+	#If Player 1 Picks Capitol O or lower Case O
+conditionIfO:
+	beq $t0, 'O', equalsO
+		jal conditionIfo
+
+conditionIfo:
+	beq $t0, 'o', equalsO
+	
+	
+equalsX: 
+	#player 1 is x message
+	li $v0, 4
+	la $a0, player1isX
+	syscall
+	
+	jal initialize
+	
+equalsO: 
+	#player 1 is o message
+	li $v0, 4
+	la $a0, player1isO
+	syscall
+	
+initialize:	
+	jal initializeGame
+	
+	#else, send error message
 	
 gameLoop:
 	# 1. Display current board 
@@ -154,6 +313,93 @@ storePlayer:
 # Output: none
 # Uses board data structure to know what to display
 drawBoard:
+
+#new line Character
+#li $v0, 4
+#la $a1, nL
+#syscall
+
+#MAKE INTO .MACROS
+Row0:
+li $v0, 1
+la $a0, 1
+syscall
+
+li $v0, 4
+la $a0, columnDivider
+syscall
+
+li $v0, 1
+la $a0, 2
+syscall
+
+li $v0, 4
+la $a0, columnDivider
+syscall
+
+li $v0, 1
+la $a0, 3
+syscall
+
+li $v0, 4
+la $a0, rowDivider
+syscall
+
+Row1:
+
+li $v0, 1
+la $a0, 4
+syscall
+
+li $v0, 4
+la $a0, columnDivider
+syscall
+
+
+li $v0, 1
+la $a0, 5
+syscall
+
+li $v0, 4
+la $a0, columnDivider
+syscall
+
+li $v0, 1
+la $a0, 6
+syscall
+
+li $v0, 4
+la $a0, rowDivider
+syscall
+
+Row2:
+
+li $v0, 1
+la $a0, 7
+syscall
+
+li $v0, 4
+la $a0, columnDivider
+syscall
+
+
+li $v0, 1
+la $a0, 8
+syscall
+
+li $v0, 4
+la $a0, columnDivider
+syscall
+
+li $v0, 1
+la $a0, 9
+syscall
+
+#new line Character
+#li $v0, 4
+#la $a1, nL
+#syscall
+
     # TODO:
     # - Load board values from memory
     # - For each cell:
