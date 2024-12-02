@@ -1,15 +1,16 @@
 # Tic Tac Toe
 # Lindsay Kislingbury, Catherine Lopez-Ruiz, Kenia Velasco, Hadya Rohin, Hope Gomez
 
-
+# Things to do still: input validation in getInput, check for win in checkWin, update menu,
+# store and read past scores in file? 
 .macro  end
 	li $v0, 10
 	syscall
 .end_macro
 	
-
 .data
 # Messages
+## TODO: update menu ##
 welcomeMessage:	.asciiz "\n	 Tic Tac Toe!\n"
 mainMenu: .asciiz "\n----------MAIN MENU----------\n1. Rules of the Game\n2. How to play in MIPS\n3. Play Game!\n"
 selectOne: .asciiz "\nPlase select one of the options: "
@@ -28,8 +29,9 @@ choiceO: .byte 'O'
 choiceo: .byte 'o'
 choiceYes: .byte 'y'
 choiceNo: .byte 'n'
-turnMessage_X:	.asciiz "\nPlayer X's turn!\n"
-turnMessage_O:	.asciiz "Player O's turn!\n"
+turnMessage_1: .asciiz "\nPlayer 1's turn ("
+turnMessage_2: .asciiz "\nPlayer 2's turn ("
+closeParen: .asciiz ")!\n"
 inputPrompt:	.asciiz "Enter position (1-9): "
 invalidMessage:	.asciiz "Invalid move! Try again.\n"
 winMessage:		.asciiz "\nWINNER: "
@@ -42,6 +44,7 @@ board:		.word boardRow0, boardRow1, boardRow2
 boardRow0:	.word 1, 2, 3
 boardRow1: 	.word 4, 5, 6
 boardRow2: 	.word 7, 8, 9
+boardValues: .byte '1', '2', '3', '4', '5', '6', '7', '8', '9'  # Initial board state
 
 # Draw Board
 rowDivider: .asciiz "\n-----\n"
@@ -51,9 +54,12 @@ columnDivider: .byte '|'
 currentPlayer: 	.word 1 # 1 for player X, 2 for player O
 movesMade:		.word 0 # track # of moves (max 9)
 
-player1_Letter: .word 0
-player2_Letter: .word 0
+player1_Letter: .byte 0 # X or O 
+player2_Letter: .byte 0 # X or O
 
+debug_p1_symbol: .asciiz "\nDEBUG - Player 1's symbol is: "
+debug_p2_symbol: .asciiz "\nDEBUG - Player 2's symbol is: "
+debug_current: .asciiz "\nDEBUG - Current player is: "
 
 .text
 main:
@@ -80,17 +86,15 @@ main:
 IsUserInput1:
 	#if user input is 1
 	beq $t0,1, equals1
-	
 	j IsUserInput2
 	
 equals1:#show rules 
-
-#Show Rules Title
+	#Show Rules Title
 	li $v0, 4
 	la $a0, gameRulesTitle
 	syscall
 
-#Show rules of Tic-tac-toe
+	#Show rules of Tic-tac-toe
 	li $v0, 4
 	la $a0, gameRules
 	syscall
@@ -110,17 +114,15 @@ equals1:#show rules
 IsUserInput2:
 	#If user input is 2
 	beq $t0,2,equals2
-	
 	j IsUserInput3
 	
 equals2: #Show how to play in MIPS
-
-#Print howTo Title
+	#Print howTo Title
 	li $v0, 4
 	la $a0, howToTitle
 	syscall
 
-#Print howTo description
+	#Print howTo description
 	li $v0, 4
 	la $a0, howTo
 	syscall
@@ -135,19 +137,15 @@ equals2: #Show how to play in MIPS
 	move $t0, $v0
 	
 	beq $t0, 'y', yes
-	
 	#else no
 	
-	
-	yes:
-		jal initialize
-
-
-
+yes:
+	jal initialize
 
 IsUserInput3:
 	#If User input is 3
 	beq $t0, 3, equals3
+
 equals3:
 	# Initalize game
 	li $v0, 4
@@ -164,302 +162,436 @@ equals3:
 	syscall
 	move $t0, $v0
 	
-	
 	#If Player Picks Capitol X or Lower Case X
 conditionIfX:
 	beq $t0, 'X', equalsX
-		jal  conditionIfx 
+	jal  conditionIfx 
+	
 conditionIfx:	
 	beq $t0, 'x', equalsX
-		jal conditionIfO 
+	jal conditionIfO 
 	
 	#If Player 1 Picks Capitol O or lower Case O
 conditionIfO:
 	beq $t0, 'O', equalsO 
-		jal conditionIfo
+	jal conditionIfo
 
 conditionIfo:
 	beq $t0, 'o', equalsO
-		jal conditionIfX
+	jal conditionIfX
 	
 equalsX: 
-	#player 1 is x message
-	li $v0, 4
-	la $a0, player1isX
-	syscall
-	
-	jal initialize
-	
+    # Store X for player 1 and O for player 2
+    la $t1, player1_Letter
+    li $t2, 'X'
+    sb $t2, ($t1)         # Store X in player1_Letter
+    
+    la $t1, player2_Letter
+    li $t2, 'O'
+    sb $t2, ($t1)         # Store O in player2_Letter
+    
+    # player 1 is x message
+    li $v0, 4
+    la $a0, player1isX
+    syscall
+    
+    j initialize
+    
 equalsO: 
-	#player 1 is o message
-	li $v0, 4
-	la $a0, player1isO
-	syscall
-	
+    # Store O for player 1 and X for player 2
+    la $t1, player1_Letter
+    li $t2, 'O'
+    sb $t2, ($t1)         # Store O in player1_Letter
+    
+    la $t1, player2_Letter
+    li $t2, 'X'
+    sb $t2, ($t1)         # Store X in player2_Letter
+    
+    # player 1 is o message
+    li $v0, 4
+    la $a0, player1isO
+    syscall
+    
+    j initialize
+    
+# Initialize new game
+# Resets board state, move counter, and sets Player 1 as current
+# Returns: None
 initialize:	
 	jal initializeGame
-	
-	#else, send error message
-	
-gameLoop:
-	# 1. Display current board 
-	jal drawBoard
-	
-	# 2. Show whose turn it is
-	lw $t0, currentPlayer
-	li $t1, 1		
-	beq $t0, $t1, showXTurn # if current player is 1, go to showXTurn
-	j showOTurn # if not, go to showOTurn
-	
-showXTurn:
-    	li $v0, 4
-    	la $a0, turnMessage_X
-    	syscall
-    	j getMove
-
-showOTurn:
-   	li $v0, 4
-    	la $a0, turnMessage_O
-    	syscall
-   	j getMove
-
-getMove:
-	# 3. Get and validate move
-	jal getPlayerMove # SHOULD STORE VALID MOVE IN $v0
-	
-	# 4. Execute Move
-	move $a0, $v0 # put the chosen position in $a0
-	lw $a1, currentPlayer # put the current mark (1 for X, 2 for O) in $a1
-	jal executeMove
-	
-	# 5. Check for win
-	jal checkWin
-	bnez $v0, gameWon # if win is detected, go to gameWon
-	
-	# 6. Check for tie
-	lw $t0, movesMade
-	li $t1, 9 # if 9 moves made, it's a tie
-	beq $t0, $t1, gameTie
-	
-	# 7. Switch player and continue game loop
-	jal switchPlayer
 	j gameLoop
 
+# Main game loop 
+# Handles turns, moves, and checks for win/tie conditions
+# Continues until game ends
+gameLoop:
+    # display current board 
+    jal drawBoard
+
+    # show whose turn it is based on currentPlayer value
+    lw $t0, currentPlayer   # 1 for Player 1, 2 for Player 2
+    li $t1, 1
+    
+    # show player turn message
+    beq $t0, $t1, displayPlayer1Turn
+    j displayPlayer2Turn
+
+displayPlayer1Turn:
+    # print "Player 1's turn ("
+    li $v0, 4
+    la $a0, turnMessage_1
+    syscall
+    
+    # print their symbol (X or O)
+    la $t0, player1_Letter
+    lb $a0, ($t0)        # load byte
+    li $v0, 11			# print char
+    syscall
+    
+    # print closing )
+    li $v0, 4
+    la $a0, closeParen
+    syscall
+    j getMove
+
+displayPlayer2Turn:
+    # print "Player 2's turn ("
+    li $v0, 4
+    la $a0, turnMessage_2
+    syscall
+    
+    # print their symbol (X or O)
+    la $t0, player2_Letter
+    lb $a0, ($t0)        # load byte
+    li $v0, 11			# print char
+    syscall
+    
+    # print closing )
+    li $v0, 4
+    la $a0, closeParen
+    syscall
+    j getMove
+    
+getMove:
+    # get and process move
+    jal getPlayerMove       # returns the chosen position in $v0
+    move $a0, $v0           # put chosen position in $a0
+    jal executeMove
+    
+    # check for win
+    jal checkWin
+    move $t0, $v0         
+    bnez $t0, gameWon
+    
+    # check for tie
+    # 9 moves and no win is a tie
+    lw $t0, movesMade
+    li $t1, 9
+    beq $t0, $t1, gameTie
+    
+    # switch player and continue
+    jal switchPlayer
+    j gameLoop
+
 gameWon:
-	# Handle win condition
-	li $v0, 4
-	la $a0, winMessage
-	syscall
-	
-	# Display final board
-	jal drawBoard
-	j playAgain
+    # phow win message
+    li $v0, 4
+    la $a0, winMessage
+    syscall
+    
+    # print winning player's symbol
+    lw $t0, currentPlayer
+    li $t1, 1
+    beq $t0, $t1, showPlayer1Win
+    lb $a0, player2_Letter
+    j displayWinner
+    
+showPlayer1Win:
+    lb $a0, player1_Letter
+
+displayWinner:
+    li $v0, 11    # print char
+    syscall
+    
+    # show final board
+    jal drawBoard
+    j playAgain
 
 gameTie:
-	# Handle tie condition
-	li $v0, 4
-	la $a0, tieMessage
-	syscall
-	j playAgain
+    # print tie message
+    li $v0, 4
+    la $a0, tieMessage
+    syscall
+    j playAgain
 
 playAgain:
-	li $v0, 4
-	la $a0, playAgainPrompt
-	syscall
-	
-	li $v0, 5 # read play again choice
-	syscall
-	
-	bnez $v0, main #if not zero, go to start of main
-	end 
+	# print prompt to play again
+    li $v0, 4
+    la $a0, playAgainPrompt
+    syscall
+    
+    li $v0, 5 # get play again choice
+    syscall
+    
+    beqz $v0, endGame  # 0 = end game
+    j initialize       # otherwise initialize and start new game
+    
+endGame:
+    end
 	
 initializeGame:
-	# Reset moves counter movesMade
-	sw $zero, movesMade
-	
-	# Set player to 1. Player 1 is X
-	li $t0, 1
-	sw $t0, currentPlayer
-	jr $ra # RETURN TO THE ADDRESS WHERE THIS FUNCTION WAS CALLED <(^.^)>
-
-# Switches current player between X and O
-# Also increments move counter
-switchPlayer:
-	lw $t0, currentPlayer  # load current player value into $t0 (1=X, 2=O)
-	li $t1, 1		# will compare against MARK_X (1)
-	# if the current player is X (1), branch to setO to change to player O
-	beq $t0, $t1, setO	# if current player is X, make it O's turn
-	# if we get here, current player was O
-	li $t0, 1		# set back to X (1)
-	j storePlayer	# jump to store 1
-
-# Changes player to O
-setO:	li $t0, 2		# set to 2
-
-# Save new current player to memory
-storePlayer: 
-	sw $t0, currentPlayer # save new current player
-	
-	# Increment moves counter
-	lw $t0, movesMade 	# get current number of moves
-	addi $t0, $t0, 1	# increment number of moves made
-	sw $t0, movesMade	# save new moves count to memory
-	jr $ra		# go back to where this function was called (game loop)
-	
-# PERSON 1
-# Function: Displays the current state of the game board
-# Should show numbers 1-9 for empty squares, X for MARK_X, and O for MARK_O
-# Input: none
-# Output: none
-# Uses board data structure to know what to display
-drawBoard:
-
-#new line Character
-#li $v0, 4
-#la $a1, nL
-#syscall
-
-#MAKE INTO .MACROS
-Row0:
-li $v0, 1
-la $a0, 1
-syscall
-
-li $v0, 4
-la $a0, columnDivider
-syscall
-
-li $v0, 1
-la $a0, 2
-syscall
-
-li $v0, 4
-la $a0, columnDivider
-syscall
-
-li $v0, 1
-la $a0, 3
-syscall
-
-li $v0, 4
-la $a0, rowDivider
-syscall
-
-Row1:
-
-li $v0, 1
-la $a0, 4
-syscall
-
-li $v0, 4
-la $a0, columnDivider
-syscall
-
-
-li $v0, 1
-la $a0, 5
-syscall
-
-li $v0, 4
-la $a0, columnDivider
-syscall
-
-li $v0, 1
-la $a0, 6
-syscall
-
-li $v0, 4
-la $a0, rowDivider
-syscall
-
-Row2:
-
-li $v0, 1
-la $a0, 7
-syscall
-
-li $v0, 4
-la $a0, columnDivider
-syscall
-
-
-li $v0, 1
-la $a0, 8
-syscall
-
-li $v0, 4
-la $a0, columnDivider
-syscall
-
-li $v0, 1
-la $a0, 9
-syscall
-
-#new line Character
-li $v0, 4
-la $a0, nL
-syscall
-
-    # TODO:
-    # - Load board values from memory
-    # - For each cell:
-    #   * If value is MARK_X (1), display "X"
-    #   * If value is MARK_O (2), display "O"
-    #   * Otherwise display the position number
-    # - Include vertical and horizontal lines between cells
+    # reset moves counter
+    sw $zero, movesMade
+    
+    # always start with Player 1
+    li $t0, 1
+    sw $t0, currentPlayer
+    
+    # reset board values
+    la $t0, boardValues
+    li $t1, '1'
+    sb $t1, 0($t0)
+    li $t1, '2'
+    sb $t1, 1($t0)
+    li $t1, '3'
+    sb $t1, 2($t0)
+    li $t1, '4'
+    sb $t1, 3($t0)
+    li $t1, '5'
+    sb $t1, 4($t0)
+    li $t1, '6'
+    sb $t1, 5($t0)
+    li $t1, '7'
+    sb $t1, 6($t0)
+    li $t1, '8'
+    sb $t1, 7($t0)
+    li $t1, '9'
+    sb $t1, 8($t0)
+    
     jr $ra
-
-# PERSON 2
-# Function: Gets and validates a player's move
-# Input: none
-# Output: $v0 = chosen position (1-9)
-# Must verify:
-# - Input is between 1 and 9
-# - Chosen position is not already taken
+    
+# Process a player's move
+# Gets input position (1-9), validates it, updates board
+# Returns: Position chosen in $v0
 getPlayerMove:
-    # TODO: 
-    # - Display input prompt
-    # - Get number from player
-    # - Check if valid position (1-9)
-    # - Check if position is available
-    # - If invalid, show error and ask again
-    # - Return valid position in $v0
-    
-    # For now, just get any number
-    li $v0, 5          # Read integer
+    # print move input prompt
+    li $v0, 4
+    la $a0, inputPrompt
     syscall
-    jr $ra
-
-# PERSON 3
-# Function: Places a player's mark on the board
-# Input: $a0 = position (1-9), $a1 = current player mark (MARK_X or MARK_O)
-# Output: none
-# Updates the board array in memory
-executeMove:
-    # TODO:
-    # - Convert position 1-9 to correct row and column
-    # - Store player's mark (X=1 or O=2) in correct board position
-    # - No need to validate move (Person 2 handles that)
-    jr $ra
-
-# PERSON 4
-# Function: Checks if current board state is a win
-# Input: none
-# Output: $v0 = 1 if game is won, 0 otherwise
-# Must check:
-# - All rows (3)
-# - All columns (3)
-# - Both diagonals (2)
-checkWin:
-    # TODO:
-    # - Check each row for three matching marks
-    # - Check each column for three matching marks
-    # - Check both diagonals for three matching marks
-    # - If any line has three matching X's or O's:
-    #   * Return 1 in $v0
-    # - Otherwise:
-    #   * Return 0 in $v0
     
-    # For now, always return 0 (no win)
-    li $v0, 0
+getInput:  
+	## TO DO: need to validate the position choice ## 
+    # 1. System Call Error Checking
+    #    - Check $a1 after syscall for input errors
+    #    - Handle non-numeric input cases
+    #    - Consider buffer overflow protection
+    
+    # 2. Range Validation
+    #    - Must be between 1-9
+    #    - Check < 1 (too low)
+    #    - Check > 9 (too high)
+    #    - Consider signed vs unsigned comparisons
+    
+    # 3. Position Availability Check
+    #    - Need to get current value at position in boardValues
+    #    - Check if position already contains X:
+    #        - Compare against ASCII 'X' and 'x'
+    #        - If match found, position taken
+    #    - Check if position already contains O:
+    #        - Compare against ASCII 'O' and 'o'
+    #        - If match found, position taken
+    #    - If taken, should return to get new input
+    #    - Remember to check both uppercase/lowercase
+    
+    li $v0, 5      # Read integer
+    syscall
+    move $t0, $v0  # Save input to $t0
+    
+    # basic position check (keeps game working)
+    li $t1, 1
+    blt $t0, $t1, invalidInput   # if < 1 invalid
+    li $t1, 9
+    bgt $t0, $t1, invalidInput   # if > 9 invalid
+    
+    move $v0, $t0  # move to return value
     jr $ra
+
+invalidInput:
+    # show error message
+    li $v0, 4
+    la $a0, invalidMessage
+    syscall
+    j getInput         # get input again
+
+# Execute a player's move on the board
+# Inputs: $a0 = position (1-9)
+# Updates board array with current player's symbol
+executeMove:
+    # convert position (1-9) to array index (0-8)
+    addi $t0, $a0, -1    # subtract 1 from position to get index
+    
+    # get the current player's symbol
+    lw $t1, currentPlayer
+    li $t2, 1
+    beq $t1, $t2, usePlayer1Symbol
+    lb $t3, player2_Letter    # load Player 2's symbol
+    j storeSymbol
+    
+usePlayer1Symbol:
+    lb $t3, player1_Letter    # load Player 1's symbol
+    
+storeSymbol:
+    # store symbol in the board array
+    la $t2, boardValues     # load address of board array
+    add $t2, $t2, $t0      # add index offset
+    sb $t3, ($t2)          # store the symbol at that position
+    
+    # increment moves counter
+    lw $t0, movesMade
+    addi $t0, $t0, 1
+    sw $t0, movesMade
+    
+    jr $ra
+
+# Switch active player
+# Changes currentPlayer between 1 and 2
+# Returns: None 
+switchPlayer:
+    lw $t0, currentPlayer   # load current player value
+    li $t1, 1
+    beq $t0, $t1, setPlayer2     # if player 1's turn, switch to player 2
+    li $t0, 1              # otherwise, switch back to player 1
+    j storePlayer
+
+setPlayer2:    
+    li $t0, 2              # set to player 2
+
+storePlayer:
+    sw $t0, currentPlayer  # save new current player
+    jr $ra
+
+
+# Draw the current game board
+# Displays 3x3 grid with current game state
+# Returns: None
+drawBoard:
+    la $t0, boardValues    # load board array address
+    
+    # Row 0
+    # First cell
+    lb $a0, ($t0)         # Load value
+    li $v0, 11            # Print character
+    syscall
+
+    li $v0, 4
+    la $a0, columnDivider
+    syscall
+
+    # Second cell
+    lb $a0, 1($t0)        # Load next value
+    li $v0, 11
+    syscall
+
+    li $v0, 4
+    la $a0, columnDivider
+    syscall
+
+    # Third cell
+    lb $a0, 2($t0)
+    li $v0, 11
+    syscall
+
+    li $v0, 4
+    la $a0, rowDivider
+    syscall
+
+    # Row 1
+    lb $a0, 3($t0)
+    li $v0, 11
+    syscall
+
+    li $v0, 4
+    la $a0, columnDivider
+    syscall
+
+    lb $a0, 4($t0)
+    li $v0, 11
+    syscall
+
+    li $v0, 4
+    la $a0, columnDivider
+    syscall
+
+    lb $a0, 5($t0)
+    li $v0, 11
+    syscall
+
+    li $v0, 4
+    la $a0, rowDivider
+    syscall
+
+    # Row 2
+    lb $a0, 6($t0)
+    li $v0, 11
+    syscall
+
+    li $v0, 4
+    la $a0, columnDivider
+    syscall
+
+    lb $a0, 7($t0)
+    li $v0, 11
+    syscall
+
+    li $v0, 4
+    la $a0, columnDivider
+    syscall
+
+    lb $a0, 8($t0)
+    li $v0, 11
+    syscall
+
+    #new line Character
+    li $v0, 4
+    la $a0, nL
+    syscall
+
+    jr $ra
+
+# Function: Checks for win condition (3-in-a-row)
+# Returns: 1 in $v0 if game is won, 0 if not won
+# Uses: boardValues array to check symbol positions
+checkWin:
+	## TODO: win check by checking if there are three X's or O's in a row ##
+    # 1. Winning patterns to check:
+    #    Row wins:    [0,1,2], [3,4,5], [6,7,8]
+    #    Column wins: [0,3,6], [1,4,7], [2,5,8]  
+    #    Diagonals:   [0,4,8], [2,4,6]
+    
+    # 2. For each pattern:
+    #    - Load 3 positions from boardValues
+    #    - Compare if all 3 match and are X or O
+    #    - If match found, return 1
+    
+    # 3. Suggested approach:
+    #    - Keep pattern start positions in register/memory
+    #    - Use loop to check each pattern
+    #    - Exit early if win found
+    
+    # 4. Example checking one row:
+    # la $t0, boardValues    # Load board array
+    # lb $t1, 0($t0)        # Load first position
+    # lb $t2, 1($t0)        # Load second position
+    # lb $t3, 2($t0)        # Load third position
+    # Check if all match and are valid symbols...
+    
+    # 5. Remember:
+    #    - Need to compare against both 'X' and 'O'
+    #    - Original board numbers aren't winning patterns
+    #    - Can reuse code for similar pattern checks
+    
+    li $v0, 0              # Default: no win
+    jr $ra
+    
+    
+   
