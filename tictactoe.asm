@@ -47,14 +47,13 @@ boardRow2: 	.word 7, 8, 9
 rowDivider: .asciiz "\n-----\n"
 columnDivider: .byte '|'
 
-
-# Constants
-.eqv MARK_X 1 # like an enum. makes the code more readable. not necessary if we dont want to use them
-.eqv MARK_0 2
-
 # Game State
 currentPlayer: 	.word 1 # 1 for player X, 2 for player O
 movesMade:		.word 0 # track # of moves (max 9)
+
+player1_Letter: .word 0
+player2_Letter: .word 0
+
 
 .text
 main:
@@ -73,7 +72,7 @@ main:
 	la $a0, selectOne
 	syscall
 	
-	#Get user input
+	#Get user input for menu
 	li $v0, 5
 	syscall
 	move $t0, $v0
@@ -161,26 +160,27 @@ equals3:
 	syscall
 	
 	#Get Player's pick of X or O
-	li $v0, 8
+	li $v0, 12
 	syscall
 	move $t0, $v0
 	
 	
 	#If Player Picks Capitol X or Lower Case X
+conditionIfX:
 	beq $t0, 'X', equalsX
-		jal conditionIfx
+		jal  conditionIfx 
 conditionIfx:	
 	beq $t0, 'x', equalsX
-		jal conditionIfO
+		jal conditionIfO 
 	
 	#If Player 1 Picks Capitol O or lower Case O
 conditionIfO:
-	beq $t0, 'O', equalsO
+	beq $t0, 'O', equalsO 
 		jal conditionIfo
 
 conditionIfo:
 	beq $t0, 'o', equalsO
-	
+		jal conditionIfX
 	
 equalsX: 
 	#player 1 is x message
@@ -396,9 +396,9 @@ la $a0, 9
 syscall
 
 #new line Character
-#li $v0, 4
-#la $a1, nL
-#syscall
+li $v0, 4
+la $a0, nL
+syscall
 
     # TODO:
     # - Load board values from memory
@@ -463,4 +463,3 @@ checkWin:
     # For now, always return 0 (no win)
     li $v0, 0
     jr $ra
-	
