@@ -109,7 +109,7 @@ equals1:#show rules
 	syscall
 	move $t0, $v0
 	
-	jal initialize
+	j equals3
 	
 IsUserInput2:
 	#If user input is 2
@@ -140,7 +140,7 @@ equals2: #Show how to play in MIPS
 	#else no
 	
 yes:
-	jal initialize
+	j equals3
 
 IsUserInput3:
 	#If User input is 3
@@ -380,32 +380,9 @@ getPlayerMove:
     syscall
     
 getInput:  
-	## TO DO: need to validate the position choice ## 
-    # 1. System Call Error Checking
-    #    - Check $a1 after syscall for input errors
-    #    - Handle non-numeric input cases
-    #    - Consider buffer overflow protection
-    
-    # 2. Range Validation
-    #    - Must be between 1-9
-    #    - Check < 1 (too low)
-    #    - Check > 9 (too high)
-    #    - Consider signed vs unsigned comparisons
-    
-    # 3. Position Availability Check
-    #    - Need to get current value at position in boardValues
-    #    - Check if position already contains X:
-    #        - Compare against ASCII 'X' and 'x'
-    #        - If match found, position taken
-    #    - Check if position already contains O:
-    #        - Compare against ASCII 'O' and 'o'
-    #        - If match found, position taken
-    #    - If taken, should return to get new input
-    #    - Remember to check both uppercase/lowercase
-    
     li $v0, 5      # Read integer
     syscall
-    move $t0, $v0  # Save input to $t0
+    move $t0, $v0  # Save input to $t0 
     
     # basic position check (keeps game working)
     li $t1, 1
@@ -413,6 +390,24 @@ getInput:
     li $t1, 9
     bgt $t0, $t1, invalidInput   # if > 9 invalid
     
+    #map position to index 
+    subi $t0, $t0, 1	#convert to 0 based index
+    la $t1, boardValues
+    add $t1, $t1, $t0	#get address of board at position
+    lb $t2, ($t1)	#load current value
+    
+    #check if position is taken by 'X/x' or 'O/o'
+    li $t3, 'X'
+    beq $t2, $t3, invalidInput	#if value is x, go to invalidInput
+    li $t3, 'x'
+    beq $t2, $t3, invalidInput
+    li $t3, 'O'
+    beq $t2, $t3, invalidInput	#if value is o, go to invalidInput
+    li $t3, 'o'
+    beq $t2, $t3, invalidInput
+    
+    #valid position
+    addi $t0, $t0, 1
     move $v0, $t0  # move to return value
     jr $ra
 
