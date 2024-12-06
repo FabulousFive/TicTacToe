@@ -572,6 +572,189 @@ checkWin:
     #    - Keep pattern start positions in register/memory
     #    - Use loop to check each pattern
     #    - Exit early if win found
+
+    checkWin:
+	# Save the return address on the stack
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+
+	# Check all win conditions (rows, columns, diagonals)
+	jal winRow0
+	jal winRow1
+	jal winRow2
+	jal winCol0
+	jal winCol1
+	jal winCol2
+	jal winDiag0
+	jal winDiag1
+
+	# If no win condition met, set $v0 to 0
+	addi $v0, $zero, 0
+
+	# Restore the return address and adjust stack pointer
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+
+	# Return to the caller
+	jr $ra
+
+# Function to check the first row for a win
+winRow0:
+	# Load the address of the board
+	la $t2, board
+	# Get the base address of the first row
+	lw $t1, 0($t2)
+	# Load the values of the first row's cells
+	lw $t3, 0($t1)
+	lw $t4, 4($t1)
+	lw $t5, 8($t1)
+
+	# Perform logical AND to check if all cells are the same (non-zero)
+	and $t6, $t3, $t4
+	and $t6, $t6, $t5
+	# If condition met, go to winReturn
+	bne $t6, $zero, winReturn
+
+	# Otherwise, set $v0 to 0 and return
+	addi $v0, $zero, 0
+	jr $ra
+
+# Function to check the second row for a win
+winRow1:
+	la $t2, board
+	lw $t1, 4($t2)
+	lw $t3, 0($t1)
+	lw $t4, 4($t1)
+	lw $t5, 8($t1)
+
+	and $t6, $t3, $t4
+	and $t6, $t6, $t5
+	bne $t6, $zero, winReturn
+
+	addi $v0, $zero, 0
+	jr $ra
+
+# Function to check the third row for a win
+winRow2:
+	la $t2, board
+	lw $t1, 8($t2)
+	lw $t3, 0($t1)
+	lw $t4, 4($t1)
+	lw $t5, 8($t1)
+
+	and $t6, $t3, $t4
+	and $t6, $t6, $t5
+	bne $t6, $zero, winReturn
+
+	addi $v0, $zero, 0
+	jr $ra
+
+# Function to check the first column for a win
+winCol0:
+	la $t2, board
+	lw $t1, 0($t2)
+	lw $t3, 0($t1)
+
+	lw $t1, 4($t2)
+	lw $t4, 0($t1)
+
+	lw $t1, 8($t2)
+	lw $t5, 0($t1)
+
+	and $t6, $t3, $t4
+	and $t6, $t6, $t5
+	bne $t6, $zero, winReturn
+
+	addi $v0, $zero, 0
+	jr $ra
+
+# Function to check the second column for a win
+winCol1:
+	la $t2, board
+	lw $t1, 0($t2)
+	lw $t3, 4($t1)
+
+	lw $t1, 4($t2)
+	lw $t4, 4($t1)
+
+	lw $t1, 8($t2)
+	lw $t5, 4($t1)
+
+	and $t6, $t3, $t4
+	and $t6, $t6, $t5
+	bne $t6, $zero, winReturn
+
+	addi $v0, $zero, 0
+	jr $ra
+
+# Function to check the third column for a win
+winCol2:
+	la $t2, board
+	lw $t1, 0($t2)
+	lw $t3, 8($t1)
+
+	lw $t1, 4($t2)
+	lw $t4, 8($t1)
+
+	lw $t1, 8($t2)
+	lw $t5, 8($t1)
+
+	and $t6, $t3, $t4
+	and $t6, $t6, $t5
+	bne $t6, $zero, winReturn
+
+	addi $v0, $zero, 0
+	jr $ra
+
+# Function to check the main diagonal for a win
+winDiag0:
+	la $t2, board
+	lw $t1, 0($t2)
+	lw $t3, 0($t1)
+
+	lw $t1, 4($t2)
+	lw $t4, 4($t1)
+
+	lw $t1, 8($t2)
+	lw $t5, 8($t1)
+
+	and $t6, $t3, $t4
+	and $t6, $t6, $t5
+	bne $t6, $zero, winReturn
+
+	addi $v0, $zero, 0
+	jr $ra
+
+# Function to check the anti-diagonal for a win
+winDiag1:
+	la $t2, board
+	lw $t1, 0($t2)
+	lw $t3, 8($t1)
+
+	lw $t1, 4($t2)
+	lw $t4, 4($t1)
+
+	lw $t1, 8($t2)
+	lw $t5, 0($t1)
+
+	and $t6, $t3, $t4
+	and $t6, $t6, $t5
+	bne $t6, $zero, winReturn
+
+	addi $v0, $zero, 0
+	jr $ra
+
+# Common return point for a win condition
+winReturn:
+	# Indicate a win by setting $v0 to 1
+	addi $v0, $zero, 1
+	# Restore the return address and adjust stack pointer
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	# Return to the caller
+	jr $ra
+
+
     
     # 4. Example checking one row:
     # la $t0, boardValues    # Load board array
