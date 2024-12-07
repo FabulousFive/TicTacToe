@@ -38,6 +38,7 @@ winMessage:		.asciiz "\nWINNER: "
 tieMessage:		.asciiz "Game Tie!\n"
 playAgainPrompt:	.asciiz "Play Again? (1=Yes, 0=No): "
 nL: .asciiz "   \n   "
+newLine: .asciiz "\n"
 
 # Board Data 
 board:		.word boardRow0, boardRow1, boardRow2
@@ -313,8 +314,9 @@ displayWinner:
     li $v0, 11    # print char
     syscall
     
-    # show final board
-    jal drawBoard
+    li $v0, 4      
+    la $a0, newLine
+    syscall
     j playAgain
 
 gameTie:
@@ -573,8 +575,8 @@ checkWin:
     #    - Use loop to check each pattern
     #    - Exit early if win found
 
-    checkWin:
-	# Save the return address on the stack
+checkWin:
+	# Save return address on the stack
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
 
@@ -591,7 +593,7 @@ checkWin:
 	# If no win condition met, set $v0 to 0
 	addi $v0, $zero, 0
 
-	# Restore the return address and adjust stack pointer
+	# Restore return address and adjust stack pointer
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 
@@ -600,159 +602,155 @@ checkWin:
 
 # Function to check the first row for a win
 winRow0:
-	# Load the address of the board
-	la $t2, board
-	# Get the base address of the first row
-	lw $t1, 0($t2)
-	# Load the values of the first row's cells
-	lw $t3, 0($t1)
-	lw $t4, 4($t1)
-	lw $t5, 8($t1)
+	la $t2, boardValues    # Load base address of board
+	lb $t3, 0($t2)         # Load first character of row 0
+	lb $t4, 1($t2)         # Load second character of row 0
+	lb $t5, 2($t2)         # Load third character of row 0
 
-	# Perform logical AND to check if all cells are the same (non-zero)
-	and $t6, $t3, $t4
-	and $t6, $t6, $t5
-	# If condition met, go to winReturn
-	bne $t6, $zero, winReturn
+	# Check if all characters match and are not empty
+	beq $t3, $t4, checkRow0Second
+	jr $ra
+checkRow0Second:
+	beq $t4, $t5, checkRow0Third
+	jr $ra
+checkRow0Third:
+	bne $t3, ' ', winReturn
 
-	# Otherwise, set $v0 to 0 and return
-	addi $v0, $zero, 0
 	jr $ra
 
 # Function to check the second row for a win
 winRow1:
-	la $t2, board
-	lw $t1, 4($t2)
-	lw $t3, 0($t1)
-	lw $t4, 4($t1)
-	lw $t5, 8($t1)
+	la $t2, boardValues    # Load base address of board
+	addi $t2, $t2, 3       # Offset to start of row 1
+	lb $t3, 0($t2)
+	lb $t4, 1($t2)
+	lb $t5, 2($t2)
 
-	and $t6, $t3, $t4
-	and $t6, $t6, $t5
-	bne $t6, $zero, winReturn
+	# Check if all characters match and are not empty
+	beq $t3, $t4, checkRow1Second
+	jr $ra
+checkRow1Second:
+	beq $t4, $t5, checkRow1Third
+	jr $ra
+checkRow1Third:
+	bne $t3, ' ', winReturn
 
-	addi $v0, $zero, 0
 	jr $ra
 
 # Function to check the third row for a win
 winRow2:
-	la $t2, board
-	lw $t1, 8($t2)
-	lw $t3, 0($t1)
-	lw $t4, 4($t1)
-	lw $t5, 8($t1)
+	la $t2, boardValues    # Load base address of board
+	addi $t2, $t2, 6       # Offset to start of row 2
+	lb $t3, 0($t2)
+	lb $t4, 1($t2)
+	lb $t5, 2($t2)
 
-	and $t6, $t3, $t4
-	and $t6, $t6, $t5
-	bne $t6, $zero, winReturn
+	# Check if all characters match and are not empty
+	beq $t3, $t4, checkRow2Second
+	jr $ra
+checkRow2Second:
+	beq $t4, $t5, checkRow2Third
+	jr $ra
+checkRow2Third:
+	bne $t3, ' ', winReturn
 
-	addi $v0, $zero, 0
 	jr $ra
 
 # Function to check the first column for a win
 winCol0:
-	la $t2, board
-	lw $t1, 0($t2)
-	lw $t3, 0($t1)
+	la $t2, boardValues    # Load base address of board
+	lb $t3, 0($t2)         # Load first character of column 0
+	lb $t4, 3($t2)         # Load second character of column 0
+	lb $t5, 6($t2)         # Load third character of column 0
 
-	lw $t1, 4($t2)
-	lw $t4, 0($t1)
+	# Check if all characters match and are not empty
+	beq $t3, $t4, checkCol0Second
+	jr $ra
+checkCol0Second:
+	beq $t4, $t5, checkCol0Third
+	jr $ra
+checkCol0Third:
+	bne $t3, ' ', winReturn
 
-	lw $t1, 8($t2)
-	lw $t5, 0($t1)
-
-	and $t6, $t3, $t4
-	and $t6, $t6, $t5
-	bne $t6, $zero, winReturn
-
-	addi $v0, $zero, 0
 	jr $ra
 
 # Function to check the second column for a win
 winCol1:
-	la $t2, board
-	lw $t1, 0($t2)
-	lw $t3, 4($t1)
+	la $t2, boardValues
+	lb $t3, 1($t2)
+	lb $t4, 4($t2)
+	lb $t5, 7($t2)
 
-	lw $t1, 4($t2)
-	lw $t4, 4($t1)
+	beq $t3, $t4, checkCol1Second
+	jr $ra
+checkCol1Second:
+	beq $t4, $t5, checkCol1Third
+	jr $ra
+checkCol1Third:
+	bne $t3, ' ', winReturn
 
-	lw $t1, 8($t2)
-	lw $t5, 4($t1)
-
-	and $t6, $t3, $t4
-	and $t6, $t6, $t5
-	bne $t6, $zero, winReturn
-
-	addi $v0, $zero, 0
 	jr $ra
 
 # Function to check the third column for a win
 winCol2:
-	la $t2, board
-	lw $t1, 0($t2)
-	lw $t3, 8($t1)
+	la $t2, boardValues
+	lb $t3, 2($t2)
+	lb $t4, 5($t2)
+	lb $t5, 8($t2)
 
-	lw $t1, 4($t2)
-	lw $t4, 8($t1)
+	beq $t3, $t4, checkCol2Second
+	jr $ra
+checkCol2Second:
+	beq $t4, $t5, checkCol2Third
+	jr $ra
+checkCol2Third:
+	bne $t3, ' ', winReturn
 
-	lw $t1, 8($t2)
-	lw $t5, 8($t1)
-
-	and $t6, $t3, $t4
-	and $t6, $t6, $t5
-	bne $t6, $zero, winReturn
-
-	addi $v0, $zero, 0
 	jr $ra
 
 # Function to check the main diagonal for a win
 winDiag0:
-	la $t2, board
-	lw $t1, 0($t2)
-	lw $t3, 0($t1)
+	la $t2, boardValues
+	lb $t3, 0($t2)
+	lb $t4, 4($t2)
+	lb $t5, 8($t2)
 
-	lw $t1, 4($t2)
-	lw $t4, 4($t1)
+	beq $t3, $t4, checkDiag0Second
+	jr $ra
+checkDiag0Second:
+	beq $t4, $t5, checkDiag0Third
+	jr $ra
+checkDiag0Third:
+	bne $t3, ' ', winReturn
 
-	lw $t1, 8($t2)
-	lw $t5, 8($t1)
-
-	and $t6, $t3, $t4
-	and $t6, $t6, $t5
-	bne $t6, $zero, winReturn
-
-	addi $v0, $zero, 0
 	jr $ra
 
 # Function to check the anti-diagonal for a win
 winDiag1:
-	la $t2, board
-	lw $t1, 0($t2)
-	lw $t3, 8($t1)
+	la $t2, boardValues
+	lb $t3, 2($t2)
+	lb $t4, 4($t2)
+	lb $t5, 6($t2)
 
-	lw $t1, 4($t2)
-	lw $t4, 4($t1)
+	beq $t3, $t4, checkDiag1Second
+	jr $ra
+checkDiag1Second:
+	beq $t4, $t5, checkDiag1Third
+	jr $ra
+checkDiag1Third:
+	bne $t3, ' ', winReturn
 
-	lw $t1, 8($t2)
-	lw $t5, 0($t1)
-
-	and $t6, $t3, $t4
-	and $t6, $t6, $t5
-	bne $t6, $zero, winReturn
-
-	addi $v0, $zero, 0
 	jr $ra
 
 # Common return point for a win condition
 winReturn:
-	# Indicate a win by setting $v0 to 1
-	addi $v0, $zero, 1
-	# Restore the return address and adjust stack pointer
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	# Return to the caller
-	jr $ra
+    addi $v0, $zero, 1          # Indicate a win in $v0
+    li $t7, 1                   # Set winner flag
+    lw $ra, 0($sp)              # Restore return address
+    addi $sp, $sp, 4            # Restore stack pointer
+    jr $ra                      # Return to caller
+
+
 
 
     
