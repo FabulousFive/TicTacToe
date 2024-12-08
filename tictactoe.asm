@@ -558,7 +558,7 @@ drawBoard:
 # Function: Checks for win condition (3-in-a-row)
 # Returns: 1 in $v0 if game is won, 0 if not won
 # Uses: boardValues array to check symbol positions
-checkWin:
+#checkWin:
 	## TODO: win check by checking if there are three X's or O's in a row ##
     # 1. Winning patterns to check:
     #    Row wins:    [0,1,2], [3,4,5], [6,7,8]
