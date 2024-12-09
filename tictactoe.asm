@@ -1,4 +1,4 @@
-# Tic Tac Toe
+#Tic Tac Toe
 # Lindsay Kislingbury, Catherine Lopez-Ruiz, Kenia Velasco, Hadya Rohin, Hope Gomez
 
 # Things to do still: input validation in getInput, check for win in checkWin, update menu,
@@ -133,21 +133,28 @@ equals2: #Show how to play in MIPS
 	syscall
 	
 	#Get Player's responce, Yes or No
-	li $v0, 8
+	li $v0, 12
 	syscall
 	move $t0, $v0
 	
 	beq $t0, 'y', yes
 	#else no
+		jal main
 	
 yes:
-	j equals3
+	jal equals3
 
 IsUserInput3:
 	#If User input is 3
 	beq $t0, 3, equals3
 
 equals3:
+
+   	#new line Character
+    	li $v0, 4
+    	la $a0, newLine
+    	syscall	
+
 	# Initalize game
 	li $v0, 4
 	la $a0, startGame
@@ -472,6 +479,12 @@ storePlayer:
 # Displays 3x3 grid with current game state
 # Returns: None
 drawBoard:
+
+    #new line Character
+    li $v0, 4
+    la $a0, newLine
+    syscall
+
     la $t0, boardValues    # load board array address
     
     # Row 0
@@ -768,6 +781,3 @@ winReturn:
     
     li $v0, 0              # Default: no win
     jr $ra
-    
-    
-   
