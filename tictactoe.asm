@@ -96,9 +96,13 @@ equals1:#show rules
 	syscall
 	
 	#Get Player's responce, Yes or No
-	li $v0, 8
+	li $v0, 12
 	syscall
 	move $t0, $v0
+
+	beq $t0, 'y', yes
+	#else no
+		jal main
 	
 	j equals3
 	
