@@ -1,8 +1,7 @@
 #Tic Tac Toe
 # Lindsay Kislingbury, Catherine Lopez-Ruiz, Kenia Velasco, Hadya Rohin, Hope Gomez
+# 12/08/2024
 
-# Things to do still: input validation in getInput, check for win in checkWin, update menu,
-# store and read past scores in file? 
 .macro  end
 	li $v0, 10
 	syscall
@@ -10,7 +9,6 @@
 	
 .data
 # Messages
-## TODO: update menu ##
 welcomeMessage:	.asciiz "\n	 Tic Tac Toe!\n"
 mainMenu: .asciiz "\n----------MAIN MENU----------\n1. Rules of the Game\n2. How to play in MIPS\n3. Play Game!\n"
 selectOne: .asciiz "\nPlase select one of the options: "
@@ -41,10 +39,6 @@ nL: .asciiz "   \n   "
 newLine: .asciiz "\n"
 
 # Board Data 
-board:		.word boardRow0, boardRow1, boardRow2
-boardRow0:	.word 1, 2, 3
-boardRow1: 	.word 4, 5, 6
-boardRow2: 	.word 7, 8, 9
 boardValues: .byte '1', '2', '3', '4', '5', '6', '7', '8', '9'  # Initial board state
 
 # Draw Board
@@ -54,13 +48,9 @@ columnDivider: .byte '|'
 # Game State
 currentPlayer: 	.word 1 # 1 for player X, 2 for player O
 movesMade:		.word 0 # track # of moves (max 9)
-
 player1_Letter: .byte 0 # X or O 
 player2_Letter: .byte 0 # X or O
 
-debug_p1_symbol: .asciiz "\nDEBUG - Player 1's symbol is: "
-debug_p2_symbol: .asciiz "\nDEBUG - Player 2's symbol is: "
-debug_current: .asciiz "\nDEBUG - Current player is: "
 
 .text
 main:
@@ -149,7 +139,6 @@ IsUserInput3:
 	beq $t0, 3, equals3
 
 equals3:
-
    	#new line Character
     	li $v0, 4
     	la $a0, newLine
@@ -400,10 +389,10 @@ getInput:
     bgt $t0, $t1, invalidInput   # if > 9 invalid
     
     #map position to index 
-    subi $t0, $t0, 1	#convert to 0 based index
+    subi $t0, $t0, 1		#convert to 0 based index
     la $t1, boardValues
     add $t1, $t1, $t0	#get address of board at position
-    lb $t2, ($t1)	#load current value
+    lb $t2, ($t1)		#load current value
     
     #check if position is taken by 'X/x' or 'O/o'
     li $t3, 'X'
@@ -417,7 +406,7 @@ getInput:
     
     #valid position
     addi $t0, $t0, 1
-    move $v0, $t0  # move to return value
+    move $v0, $t0  		# move to return value
     jr $ra
 
 invalidInput:
@@ -447,8 +436,8 @@ usePlayer1Symbol:
 storeSymbol:
     # store symbol in the board array
     la $t2, boardValues     # load address of board array
-    add $t2, $t2, $t0      # add index offset
-    sb $t3, ($t2)          # store the symbol at that position
+    add $t2, $t2, $t0       # add index offset
+    sb $t3, ($t2)           # store the symbol at that position
     
     # increment moves counter
     lw $t0, movesMade
@@ -479,7 +468,6 @@ storePlayer:
 # Displays 3x3 grid with current game state
 # Returns: None
 drawBoard:
-
     #new line Character
     li $v0, 4
     la $a0, newLine
@@ -571,23 +559,6 @@ drawBoard:
 # Function: Checks for win condition (3-in-a-row)
 # Returns: 1 in $v0 if game is won, 0 if not won
 # Uses: boardValues array to check symbol positions
-#checkWin:
-	## TODO: win check by checking if there are three X's or O's in a row ##
-    # 1. Winning patterns to check:
-    #    Row wins:    [0,1,2], [3,4,5], [6,7,8]
-    #    Column wins: [0,3,6], [1,4,7], [2,5,8]  
-    #    Diagonals:   [0,4,8], [2,4,6]
-    
-    # 2. For each pattern:
-    #    - Load 3 positions from boardValues
-    #    - Compare if all 3 match and are X or O
-    #    - If match found, return 1
-    
-    # 3. Suggested approach:
-    #    - Keep pattern start positions in register/memory
-    #    - Use loop to check each pattern
-    #    - Exit early if win found
-
 checkWin:
 	# Save return address on the stack
 	addi $sp, $sp, -4
@@ -623,12 +594,13 @@ winRow0:
 	# Check if all characters match and are not empty
 	beq $t3, $t4, checkRow0Second
 	jr $ra
+	
 checkRow0Second:
 	beq $t4, $t5, checkRow0Third
 	jr $ra
+	
 checkRow0Third:
 	bne $t3, ' ', winReturn
-
 	jr $ra
 
 # Function to check the second row for a win
@@ -642,12 +614,13 @@ winRow1:
 	# Check if all characters match and are not empty
 	beq $t3, $t4, checkRow1Second
 	jr $ra
+	
 checkRow1Second:
 	beq $t4, $t5, checkRow1Third
 	jr $ra
+	
 checkRow1Third:
 	bne $t3, ' ', winReturn
-
 	jr $ra
 
 # Function to check the third row for a win
@@ -661,12 +634,13 @@ winRow2:
 	# Check if all characters match and are not empty
 	beq $t3, $t4, checkRow2Second
 	jr $ra
+	
 checkRow2Second:
 	beq $t4, $t5, checkRow2Third
 	jr $ra
+	
 checkRow2Third:
 	bne $t3, ' ', winReturn
-
 	jr $ra
 
 # Function to check the first column for a win
@@ -679,12 +653,13 @@ winCol0:
 	# Check if all characters match and are not empty
 	beq $t3, $t4, checkCol0Second
 	jr $ra
+	
 checkCol0Second:
 	beq $t4, $t5, checkCol0Third
 	jr $ra
+	
 checkCol0Third:
 	bne $t3, ' ', winReturn
-
 	jr $ra
 
 # Function to check the second column for a win
@@ -696,12 +671,13 @@ winCol1:
 
 	beq $t3, $t4, checkCol1Second
 	jr $ra
+	
 checkCol1Second:
 	beq $t4, $t5, checkCol1Third
 	jr $ra
+	
 checkCol1Third:
 	bne $t3, ' ', winReturn
-
 	jr $ra
 
 # Function to check the third column for a win
@@ -713,9 +689,11 @@ winCol2:
 
 	beq $t3, $t4, checkCol2Second
 	jr $ra
+	
 checkCol2Second:
 	beq $t4, $t5, checkCol2Third
 	jr $ra
+	
 checkCol2Third:
 	bne $t3, ' ', winReturn
 
@@ -730,12 +708,13 @@ winDiag0:
 
 	beq $t3, $t4, checkDiag0Second
 	jr $ra
+	
 checkDiag0Second:
 	beq $t4, $t5, checkDiag0Third
 	jr $ra
+	
 checkDiag0Third:
 	bne $t3, ' ', winReturn
-
 	jr $ra
 
 # Function to check the anti-diagonal for a win
@@ -747,12 +726,13 @@ winDiag1:
 
 	beq $t3, $t4, checkDiag1Second
 	jr $ra
+	
 checkDiag1Second:
 	beq $t4, $t5, checkDiag1Third
 	jr $ra
+	
 checkDiag1Third:
 	bne $t3, ' ', winReturn
-
 	jr $ra
 
 # Common return point for a win condition
@@ -762,22 +742,6 @@ winReturn:
     lw $ra, 0($sp)              # Restore return address
     addi $sp, $sp, 4            # Restore stack pointer
     jr $ra                      # Return to caller
-
-
-
-
     
-    # 4. Example checking one row:
-    # la $t0, boardValues    # Load board array
-    # lb $t1, 0($t0)        # Load first position
-    # lb $t2, 1($t0)        # Load second position
-    # lb $t3, 2($t0)        # Load third position
-    # Check if all match and are valid symbols...
-    
-    # 5. Remember:
-    #    - Need to compare against both 'X' and 'O'
-    #    - Original board numbers aren't winning patterns
-    #    - Can reuse code for similar pattern checks
-    
-    li $v0, 0              # Default: no win
+    li $v0, 0              		# Default: no win
     jr $ra
