@@ -1,63 +1,54 @@
-# Tic-Tac-Toe MIPS Project Structure
+# Tic Tac Toe MIPS Assembly Project
 
-## Team Responsibilities
+## Team Members
+- Lindsay Kislingbury
+- Catherine Lopez-Ruiz
+- Kenia Velasco
+- Hadya Rohin
+- Hope Gomez
 
-### 1. Board Management & Initialization (Person 1)
-- Data segment setup (board structure, lines, size)
-- Board initialization
-- Board drawing functionality (`draw_board`)
-- Basic testing of board display
+## Project Description
+This project is a fully functional implementation of the classic Tic Tac Toe game in MIPS assembly language. Players can take turns placing X's and O's on a 3x3 grid with the goal of getting three in a row horizontally, vertically, or diagonally.
 
-### 2. Input & Move Validation (Person 2)
-- Input handling for both players
-- Move validation logic (`InvalidMove`)
-- Coordinate system implementation
-- Testing various input scenarios
+## Features
+- Interactive menu system with game rules and instructions
+- Player choice between X and O
+- Visual representation of the game board
+- Input validation to prevent illegal moves
+- Win condition detection for rows, columns, and diagonals
+- Tie game detection
+- Option to play multiple games in succession
 
-### 3. Game Logic - Player Moves (Person 3)
-- `play_x` implementation
-- `play_y` implementation
-- Move execution logic
-- Testing move execution
+## How to Run the Program
 
-### 4. Win Condition Checking (Person 4)
-All win condition checks:
-- Row checks (`winRow0`, `winRow1`, `winRow2`)
-- Column checks (`winCol0`, `winCol1`, `winCol2`)
-- Diagonal checks (`winDiag0`, `winDiag1`)
-- Testing win conditions
+### Requirements
+- MARS (MIPS Assembler and Runtime Simulator)
+  - You can download MARS from [Missouri State University's website](http://courses.missouristate.edu/kenvollmar/mars/) if you don't already have it
 
-### 5. Main Game Flow & UI (Lindsay)
-- Main game loop
-- User interface messages/prompts
-- Game state management
-- Instructions display
-- Final integration and testing
+### Running Instructions
+1. Download and open MARS
+2. Open the Tic Tac Toe program file (`TicTacToe.asm`) in MARS
+   - File → Open → Navigate to and select the file
+3. Assemble the program
+   - Click the "Assemble" button (wrench icon) or press F3
+4. Run the program
+   - Click the "Run" button (green play icon) or press F5
+5. Interact with the program through the MARS text console window that appears
 
-## Project Phases
+## Gameplay Instructions
+1. Use the main menu to:
+   - View the rules of Tic Tac Toe
+   - Learn how to play in MIPS
+   - Start a new game
+2. Player 1 will choose to be either X or O
+3. Players take turns entering a number (1-9) corresponding to the position on the board where they want to place their mark
+4. The game will announce a winner or a tie when appropriate
+5. After a game ends, you can choose to play again or exit
 
-### Initial Setup (Everyone)
-1. Set up MIPS development environment
-2. Review requirements and game rules together
-3. Agree on naming conventions and documentation standards
+## Implementation Notes
+- The game uses arrays to track the state of the board
+- Player input is validated to ensure only legal moves are made
+- The program uses MIPS syscalls for user input and output
+- Win conditions are checked after each move
 
-### First Steps by Role
-- **Person 1**: Implement basic board structure and display
-- **Person 2**: Begin with basic input handling
-- **Person 3**: Create structure for move execution
-- **Person 4**: Set up framework for win condition checking
-- **Lindsay**: Set up basic game loop and UI messages
-
-### Development Process
-1. Individual component development
-2. Regular team meetings for compatibility checks
-3. Incremental integration
-4. Component testing
-5. Final integration
-
-### Integration Order
-1. Board display + Input handling
-2. Move execution + Board updates
-3. Win condition checking
-4. Game flow and UI
-5. Final polish and bug fixes
+Enjoy playing Tic Tac Toe in MIPS assembly!
